@@ -1,0 +1,2 @@
+# SnickersHunter
+OpenGL demo project
