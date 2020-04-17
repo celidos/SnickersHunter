@@ -50,7 +50,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory.h>
 #include <math.h>
 #include <stddef.h>
-#include <string.h>
 
 // Our compile configuration
 #include "defs.h"
