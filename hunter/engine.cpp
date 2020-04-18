@@ -16,7 +16,7 @@ void Engine::computeMatricesFromInputs(GLFWwindow* window) {
     glfwSetCursorPos(window, 1024/2, 768/2);
 
     // Compute new orientation
-    player_.horizontalAngle -= player_.mouseSpeed * float(1024/2 - xpos );
+    player_.horizontalAngle += player_.mouseSpeed * float(1024/2 - xpos );
     player_.verticalAngle   += player_.mouseSpeed * float( 768/2 - ypos );
 
     // Direction : Spherical coordinates to Cartesian coordinates conversion
@@ -53,14 +53,14 @@ void Engine::computeMatricesFromInputs(GLFWwindow* window) {
 
     // Move forward
     if (glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS){
-        player_.position -= player_.moveDirection * deltaTime * player_.speed;
+        player_.position += player_.moveDirection * deltaTime * player_.speed;
         printf("added %f, %f, %f", (deltaTime ),
                (player_.direction * deltaTime * player_.speed)[1], (player_.direction * deltaTime * player_.speed)[2] );
 //        printf("lol kek \n");
     }
     // Move backward
     if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
-        player_.position += player_.moveDirection * deltaTime * player_.speed;
+        player_.position -= player_.moveDirection * deltaTime * player_.speed;
     }
     // Strafe right
     if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS){

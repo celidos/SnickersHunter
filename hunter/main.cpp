@@ -179,6 +179,16 @@ int main( void )
     glGenBuffers(1, &uvbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
+    
+    GLuint vertexbuffer2;
+    glGenBuffers(1, &vertexbuffer2);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer2);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+    GLuint uvbuffer2;
+    glGenBuffers(1, &uvbuffer2);
+    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer2);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
 
     Engine eng;
 
@@ -235,6 +245,55 @@ int main( void )
 
         // Draw the triangles !
         glDrawArrays(GL_TRIANGLES, 0, 12*3); // 12*3 indices starting at 0 -> 12 triangles
+        
+        // Start draw 2nd object
+        
+        // Use our shader
+        glUseProgram(programID);
+        
+        glm::mat4 ModelMatrix2 = glm::mat4(1.0);
+        ModelMatrix2 = glm::translate(ModelMatrix2, glm::vec3(4.0f, 0.0f, -5.0f));
+        glm::mat4 MVP2 = ProjectionMatrix * ViewMatrix * ModelMatrix2;
+    
+        // Compute the MVP matrix from keyboard and mouse input
+//        computeMatricesFromInputs();
+        // Send our transformation to the currently bound shader,
+        // in the "MVP" uniform
+        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]);
+
+        // Bind our texture in Texture Unit 0
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, Texture);
+        // Set our "myTextureSampler" sampler to user Texture Unit 0
+        glUniform1i(TextureID, 0);
+
+        // 1rst attribute buffer : vertices
+        glEnableVertexAttribArray(vertexPosition_modelspaceID);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        glVertexAttribPointer(
+            vertexPosition_modelspaceID,  // The attribute we want to configure
+            3,                            // size
+            GL_FLOAT,                     // type
+            GL_FALSE,                     // normalized?
+            0,                            // stride
+            (void*)0                      // array buffer offset
+        );
+
+        // 2nd attribute buffer : UVs
+        glEnableVertexAttribArray(vertexUVID);
+        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+        glVertexAttribPointer(
+            vertexUVID,                   // The attribute we want to configure
+            2,                            // size : U+V => 2
+            GL_FLOAT,                     // type
+            GL_FALSE,                     // normalized?
+            0,                            // stride
+            (void*)0                      // array buffer offset
+        );
+
+        // Draw the triangles !
+        glDrawArrays(GL_TRIANGLES, 0, 12*3); // 12*3 indices starting at 0 -> 12 triangles
+
 
         glDisableVertexAttribArray(vertexPosition_modelspaceID);
         glDisableVertexAttribArray(vertexUVID);
