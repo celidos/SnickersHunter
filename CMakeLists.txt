@@ -62,6 +62,13 @@ add_executable(hunter
 	hunter/main.cpp
 	common/shader.cpp
 	common/shader.hpp
+	common/controls.cpp
+	common/controls.hpp
+	common/texture.cpp
+	common/texture.hpp
+	
+	hunter/TransformVertexShader.vertexshader
+	hunter/TextureFragmentShader.fragmentshader
 	
 	hunter/SimpleFragmentShader.fragmentshader
 	hunter/SimpleVertexShader.vertexshader
