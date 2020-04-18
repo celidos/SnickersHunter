@@ -18,6 +18,8 @@ using namespace glm;
 #include <common/texture.hpp>
 #include <common/controls.hpp>
 
+#include "engine.hpp"
+
 int main( void )
 {
     // Initialise GLFW
@@ -178,7 +180,9 @@ int main( void )
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
 
-    do{
+    Engine eng;
+
+    do {
 
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -187,9 +191,11 @@ int main( void )
         glUseProgram(programID);
 
         // Compute the MVP matrix from keyboard and mouse input
-        computeMatricesFromInputs();
-        glm::mat4 ProjectionMatrix = getProjectionMatrix();
-        glm::mat4 ViewMatrix = getViewMatrix();
+//        computeMatricesFromInputs();
+        eng.computeMatricesFromInputs(window);
+
+        glm::mat4 ProjectionMatrix = eng.getProjectionMatrix();
+        glm::mat4 ViewMatrix = eng.getViewMatrix();
         glm::mat4 ModelMatrix = glm::mat4(1.0);
         glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
@@ -252,3 +258,4 @@ int main( void )
 
     return 0;
 }
+
