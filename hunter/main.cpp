@@ -82,9 +82,12 @@ int main( void )
     // Get a handle for our buffers
     GLuint vertexPosition_modelspaceID = glGetAttribLocation(programID, "vertexPosition_modelspace");
     GLuint vertexUVID = glGetAttribLocation(programID, "vertexUV");
-
+    
+    
     // Load the texture
     GLuint Texture = loadDDS("uvtemplate.DDS");
+    //GLuint Texture = loadBMP_custom("./Snickers-Logo.bmp");
+    
 
     // Get a handle for our "myTextureSampler" uniform
     GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
