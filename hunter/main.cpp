@@ -85,8 +85,9 @@ int main( void )
     
     
     // Load the texture
-    //GLuint Texture = loadDDS("uvtemplate.DDS");
-    GLuint Texture = loadBMP_custom("./Snickers-Logo.bmp");
+
+    // GLuint Texture = loadDDS("uvtemplate.DDS");
+    GLuint Texture = loadBMP_custom("./snickers-logo.bmp");
     
 
     // Get a handle for our "myTextureSampler" uniform
