@@ -60,6 +60,7 @@ add_definitions(
 # Tutorial 2
 add_executable(hunter 
 	hunter/main.cpp
+	hunter/engine.cpp
 	common/shader.cpp
 	common/shader.hpp
 	common/controls.cpp
