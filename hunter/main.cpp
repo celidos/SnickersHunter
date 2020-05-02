@@ -19,6 +19,8 @@ using namespace glm;
 #include <common/controls.hpp>
 
 #include "engine.hpp"
+#include "sphere.hpp"
+
 
 int main( void )
 {
@@ -75,13 +77,17 @@ int main( void )
 
     // Create and compile our GLSL program from the shaders
     GLuint programID = LoadShaders( "TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader" );
+    GLuint programIDGreen = LoadShaders( "TransformVertexShader.vertexshader", "GreenFragmentShader.fragmentshader" );
 
     // Get a handle for our "MVP" uniform
     GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+    GLuint MatrixID2 = glGetUniformLocation(programIDGreen, "MVP");
 
     // Get a handle for our buffers
     GLuint vertexPosition_modelspaceID = glGetAttribLocation(programID, "vertexPosition_modelspace");
     GLuint vertexUVID = glGetAttribLocation(programID, "vertexUV");
+
+    GLuint vertexPosition_modelspaceIDGreen = glGetAttribLocation(programIDGreen, "vertexPosition_modelspaceGreen");
     
     
     // Load the texture
@@ -98,36 +104,32 @@ int main( void )
         -1.0f,-1.0f,-1.0f,
         -1.0f,-1.0f, 1.0f,
         -1.0f, 1.0f, 1.0f,
+
         1.0f, 1.0f,-1.0f,
         -1.0f,-1.0f,-1.0f,
         -1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f,-1.0f,
-        1.0f,-1.0f,-1.0f,
+
         1.0f, 1.0f,-1.0f,
         1.0f,-1.0f,-1.0f,
         -1.0f,-1.0f,-1.0f,
-        -1.0f,-1.0f,-1.0f,
+
+        -1.0f, -1.0f,-1.0f,
         -1.0f, 1.0f, 1.0f,
         -1.0f, 1.0f,-1.0f,
-        1.0f,-1.0f, 1.0f,
+
+
+        -1.0f, 1.0f, 1.0f,
         -1.0f,-1.0f, 1.0f,
-        -1.0f,-1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
-        -1.0f,-1.0f, 1.0f,
         1.0f,-1.0f, 1.0f,
+
         1.0f, 1.0f, 1.0f,
         1.0f,-1.0f,-1.0f,
         1.0f, 1.0f,-1.0f,
+
         1.0f,-1.0f,-1.0f,
         1.0f, 1.0f, 1.0f,
         1.0f,-1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f,-1.0f,
-        -1.0f, 1.0f,-1.0f,
-        1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f,-1.0f,
-        -1.0f, 1.0f, 1.0f,
+
         1.0f, 1.0f, 1.0f,
         -1.0f, 1.0f, 1.0f,
         1.0f,-1.0f, 1.0f
@@ -136,41 +138,38 @@ int main( void )
     // Two UV coordinatesfor each vertex. They were created withe Blender.
     static const GLfloat g_uv_buffer_data[] = {
         0.000059f, 0.000004f,
-        0.000103f, 0.336048f,
-        0.335973f, 0.335903f,
-        1.000023f, 0.000013f,
-        0.667979f, 0.335851f,
-        0.999958f, 0.336064f,
-        0.667979f, 0.335851f,
-        0.336024f, 0.671877f,
-        0.667969f, 0.671889f,
-        1.000023f, 0.000013f,
-        0.668104f, 0.000013f,
-        0.667979f, 0.335851f,
+        1.000001f, 0.000000f,
+        1.000000f, 1.000000f,
+
+        0.000059f, 1.000004f,
+        1.000000f, 0.000000f,
+        1.000001f, 1.000000f,
+
+        0.000059f, 1.000004f,
+        0.000001f, 0.000000f,
+        1.000000f, 0.000000f,
+
+        0.000000f, 0.000000f,
+        1.000059f, 1.000004f,
+        0.000001f, 1.000000f,
+
+        // bad  v v v v
+
         0.000059f, 0.000004f,
-        0.335973f, 0.335903f,
-        0.336098f, 0.000071f,
-        0.667979f, 0.335851f,
-        0.335973f, 0.335903f,
-        0.336024f, 0.671877f,
-        1.000004f, 0.671847f,
-        0.999958f, 0.336064f,
-        0.667979f, 0.335851f,
-        0.668104f, 0.000013f,
-        0.335973f, 0.335903f,
-        0.667979f, 0.335851f,
-        0.335973f, 0.335903f,
-        0.668104f, 0.000013f,
-        0.336098f, 0.000071f,
-        0.000103f, 0.336048f,
-        0.000004f, 0.671870f,
-        0.336024f, 0.671877f,
-        0.000103f, 0.336048f,
-        0.336024f, 0.671877f,
-        0.335973f, 0.335903f,
-        0.667969f, 0.671889f,
-        1.000004f, 0.671847f,
-        0.667979f, 0.335851f
+        1.000001f, 0.000000f,
+        1.000000f, 1.000000f,
+
+        0.000059f, 1.000004f,
+        1.000000f, 0.000000f,
+        1.000001f, 1.000000f,
+
+        0.000059f, 1.000004f,
+        0.000001f, 0.000000f,
+        1.000000f, 0.000000f,
+
+        0.000000f, 0.000000f,
+        1.000059f, 1.000004f,
+        0.000001f, 1.000000f,
     };
 
     GLuint vertexbuffer;
@@ -182,21 +181,23 @@ int main( void )
     glGenBuffers(1, &uvbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
-    
+
+
+    int sphere1_buf_size;
+    GLfloat * sphere1_buffer_data = getSphere(4, 4, 3, sphere1_buf_size);
     GLuint vertexbuffer2;
     glGenBuffers(1, &vertexbuffer2);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * sphere1_buf_size, sphere1_buffer_data,  GL_STATIC_DRAW);
 
-    GLuint uvbuffer2;
-    glGenBuffers(1, &uvbuffer2);
-    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
+//    GLuint uvbuffer2;
+//    glGenBuffers(1, &uvbuffer2);
+//    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer2);
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
 
     Engine eng;
 
     do {
-
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -249,7 +250,7 @@ int main( void )
         // Draw the triangles !
         glDrawArrays(GL_TRIANGLES, 0, 12*3); // 12*3 indices starting at 0 -> 12 triangles
         
-        // Start draw 2nd object
+        // Start draw 2nd object ------------------------------------------------------------
         
         // Use our shader
         glUseProgram(programID);
@@ -297,9 +298,34 @@ int main( void )
         // Draw the triangles !
         glDrawArrays(GL_TRIANGLES, 0, 12*3); // 12*3 indices starting at 0 -> 12 triangles
 
-
         glDisableVertexAttribArray(vertexPosition_modelspaceID);
         glDisableVertexAttribArray(vertexUVID);
+
+        // SPHERE ---------------------------------------------------------------------------------
+
+        glUseProgram(programIDGreen);
+
+        glm::mat4 ModelMatrix3 = glm::mat4(1.0);
+        ModelMatrix3 = glm::translate(ModelMatrix3, glm::vec3(-4.0f, 0.0f, -5.0f));
+        glm::mat4 MVP3 = ProjectionMatrix * ViewMatrix * ModelMatrix3;
+
+        glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP3[0][0]);
+
+        glEnableVertexAttribArray(vertexPosition_modelspaceIDGreen);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer2);
+        glVertexAttribPointer(
+            vertexPosition_modelspaceIDGreen,  // The attribute we want to configure
+            3,                            // size
+            GL_FLOAT,                     // type
+            GL_FALSE,                     // normalized?
+            0,                            // stride
+            (void*)0                      // array buffer offset
+        );
+
+        // Draw the triangles !
+        glDrawArrays(GL_TRIANGLES, 0, sphere1_buf_size); // 12*3 indices starting at 0 -> 12 triangles
+
+        // FINISH ---------------------------------------------------------------------------------
 
         // Swap buffers
         glfwSwapBuffers(window);

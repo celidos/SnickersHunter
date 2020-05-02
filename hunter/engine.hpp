@@ -48,6 +48,8 @@ public:
 class Engine {
 private:
     Player player_;
+
+
 public:
     void computeMatricesFromInputs(GLFWwindow* window);
     glm::mat4 getViewMatrix() { return player_.getViewMatrix(); }

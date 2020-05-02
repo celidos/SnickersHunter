@@ -1,0 +1,11 @@
+#version 120
+
+varying vec3 normal;
+
+uniform vec3 dur;
+
+void main()
+{
+    float dot_vp = min(max(0.0, dot(dir, normalize(normal))), 1.0);
+    gl_FragColor = vec4(dot_vp, 1, dot_vp, 1.0f);
+}
