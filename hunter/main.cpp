@@ -1,6 +1,14 @@
 // Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
+#include <cstdlib>
+#include <iostream>
+#include <ctime>
+#include <unordered_set>
+#include <unordered_map>
+#include <random>
+#include <algorithm>
 
 // Include GLEW
 #include <GL/glew.h>
@@ -14,12 +22,77 @@ GLFWwindow* window;
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
+
 #include <common/shader.hpp>
 #include <common/texture.hpp>
 #include <common/controls.hpp>
+#include <common/objloader.hpp>
 
+#include "controls.hpp"
+#include "objects.hpp"
 #include "engine.hpp"
 #include "sphere.hpp"
+
+bool is_too_far(const Object& object) {
+    return glm::distance(Controls::position, object.center) > 10.0f;
+}
+
+template <typename U, typename V>
+bool are_close(const U& lhs, const V& rhs) {
+    return glm::distance(lhs.center, rhs.center) < lhs.radius + rhs.radius;
+}
+
+std::default_random_engine generator;
+std::uniform_real_distribution<float> uniform(0.0, 1.0);
+ 
+
+void create_target(std::vector<Target>& targets, std::vector<glm::vec3>& speeds, int cur_ts) {
+    float x = uniform(generator) * 2 * 3.14;
+    float h = uniform(generator);
+    glm::vec3 center(5 * sin(x), 0.1 + 3 * h, 5 * cos(x));
+    GLfloat radius = 0.1f + 0.05 * uniform(generator);
+    glm::vec3 angle(
+            uniform(generator) * 3.14,
+            uniform(generator) * 3.14,
+            uniform(generator) * 3.14
+    );
+    std::vector<GLfloat> color({
+           uniform(generator),
+           uniform(generator),
+           uniform(generator)
+    });
+    float brightness = std::accumulate(color.begin(), color.end(), 0.f);
+    targets.emplace_back(center + Controls::position * 0.5f, radius, angle, color,
+            cur_ts + brightness * 1000);
+    speeds.emplace_back(
+            uniform(generator) / 100,
+            uniform(generator) / 100,
+            uniform(generator) / 100
+            );
+}
+
+template <typename T>
+void remove_object(std::vector<T>& objects, std::vector<glm::vec3>& speeds, int id=0) {
+    if (objects.size() > id) {
+        objects.erase(objects.begin() + id);
+        speeds.erase(speeds.begin() + id);
+    }
+}
+
+
+void create_fireball(std::vector<Fireball>& fireballs, std::vector<glm::vec3>& speeds,
+    const glm::vec3& direction) {
+    auto fireball = Fireball(0.5, 20);
+    fireball.move(Controls::position - glm::vec3(0, 1, 0));
+    fireballs.emplace_back(fireball);
+    speeds.emplace_back(direction * 0.5f);
+}
+
+
+bool fireball_is_available(size_t iteration, size_t last_shoot_time) {
+    return (iteration - last_shoot_time > 20);
+}
+
 
 
 int main( void )
@@ -38,7 +111,7 @@ int main( void )
 
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow( 1024, 768, "Tutorial 0 - Keyboard and Mouse", NULL, NULL);
+    window = glfwCreateWindow( 1024, 768, "SnickersHunter", NULL, NULL);
     if( window == NULL ){
         fprintf( stderr, "Failed to open GLFW window.\n" );
         getchar();
@@ -74,6 +147,53 @@ int main( void )
 
     // Cull triangles which normal is not towards the camera
     glEnable(GL_CULL_FACE);
+    
+    
+    ///test
+    
+    GLuint PrID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader" );
+
+    // Get a handle for our "MVP" uniform
+    GLuint MxID = glGetUniformLocation(PrID, "MVP");
+    
+    //     Get a handle for our buffers
+    GLuint vertexPos_modelspaceID = glGetAttribLocation(PrID, "vertexPosition_modelspace");
+    GLuint vertexClrID = glGetAttribLocation(PrID, "vertexColor");
+    GLuint vertexUVnewID = glGetAttribLocation(PrID, "vertexUV");
+    
+    
+    std::vector<Target> targets;
+    std::vector<glm::vec3> target_speeds;
+    std::vector<Fireball> fireballs;
+    std::vector<glm::vec3> fireball_speeds;
+    
+    Buffer buffer;
+       Floor floor;
+
+       GLuint vertexbuffernew;
+       glGenBuffers(1, &vertexbuffernew);
+
+       GLuint colorbuffernew;
+       glGenBuffers(1, &colorbuffernew);
+
+       GLuint uvbuffernew;
+       glGenBuffers(1, &uvbuffernew);
+
+       // Load the texture using any two methods
+       //GLuint Texture = loadBMP_custom("uvtemplate.bmp");
+       GLuint Texturenew = loadBMP_custom("fireearth.bmp");
+
+       // Get a handle for our "myTextureSampler" uniform
+       GLuint TextureIDnew  = glGetUniformLocation(PrID, "myTextureSampler");
+
+       size_t iteration = 0;
+       size_t last_shoot_time = 0;
+    ///test
+    
+    
+    
+    
+    
 
     // Create and compile our GLSL program from the shaders
     GLuint programID = LoadShaders( "TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader" );
@@ -91,7 +211,6 @@ int main( void )
     
     
     // Load the texture
-
     // GLuint Texture = loadDDS("uvtemplate.DDS");
     GLuint Texture = loadBMP_custom("./snickers-logo.bmp");
     
@@ -201,7 +320,8 @@ int main( void )
     do {
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        buffer.clear();
+        
         // Use our shader
         glUseProgram(programID);
 
@@ -302,6 +422,111 @@ int main( void )
         glDisableVertexAttribArray(vertexPosition_modelspaceID);
         glDisableVertexAttribArray(vertexUVID);
 
+        
+        
+        /// test fireball
+        
+        // create targets
+        if (uniform(generator) < 0.3) {  // 0.03
+            create_target(targets, target_speeds, iteration);
+        }
+
+        // remove objects that are too far
+        for (size_t i = 0; i < targets.size(); ++i) {
+            if (targets[i].expired(iteration)) {
+                remove_object(targets, target_speeds, i);
+            }
+        }
+
+        bool has_collision = false;
+        // remove collided objects
+        for (size_t i = 0; i < targets.size(); ++i) {
+            for (size_t j = 0; j < fireballs.size(); ++j) {
+                if (are_close(targets[i], fireballs[j])) {
+                    std::cout << "COLLIDE" << std::endl;
+                    remove_object(targets, target_speeds, i);
+                    remove_object(fireballs, fireball_speeds, j);
+                    has_collision = true;
+                    break;
+                }
+            }
+        }
+        if (has_collision) {
+            glClearColor(1.0f, 1.0f, 0.2f, 0.0f);
+        } else {
+            glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+        }
+        
+        if (Controls::isSpacePressed(window) && fireball_is_available(iteration, last_shoot_time)) {
+            last_shoot_time = iteration;
+            std::cout << "Fire!\n";
+            create_fireball(fireballs, fireball_speeds, Controls::direction);
+        }
+
+        floor.draw(buffer);
+        for (size_t i = 0; i < targets.size(); ++i) {
+            targets[i].move(target_speeds[i]);
+            targets[i].draw(buffer);
+        }
+
+        for (size_t i = 0; i < fireballs.size(); ++i) {
+            fireballs[i].move(fireball_speeds[i]);
+            fireballs[i].draw(buffer);
+        }
+        
+        // Get position from controls
+        Controls::computeMatricesFromInputs(window);
+        glm::mat4 ProjectionMatrixnew = Controls::getProjectionMatrix();
+        glm::mat4 ViewMatrixnew = Controls::getViewMatrix();
+        glm::mat4 ModelMatrixnew = glm::mat4(1.0);
+        glm::mat4 MVPnew = ProjectionMatrixnew * ViewMatrixnew * ModelMatrixnew;
+        
+        glUseProgram(PrID);
+        // Send our transformation to the currently bound shader,
+        // in the "MVP" uniform
+        glUniformMatrix4fv(MxID, 1, GL_FALSE, &MVP[0][0]);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, Texturenew);
+        glUniform1i(TextureIDnew, 0);
+        
+        
+        // 1rst attribute buffer : vertices
+           glEnableVertexAttribArray(vertexPos_modelspaceID);
+           glBindBuffer(GL_ARRAY_BUFFER, vertexbuffernew);
+           glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * buffer.size(), buffer.vertex_data(), GL_STATIC_DRAW);
+           glVertexAttribPointer(vertexPos_modelspaceID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+           // 2nd attribute buffer : colors
+           glEnableVertexAttribArray(vertexClrID);
+           glBindBuffer(GL_ARRAY_BUFFER, colorbuffernew);
+           glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * buffer.size(), buffer.color_data(), GL_STATIC_DRAW);
+           glVertexAttribPointer(vertexClrID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+           // 3rd attribute buffer : textures
+           glEnableVertexAttribArray(vertexUVnewID);
+           glBindBuffer(GL_ARRAY_BUFFER, uvbuffernew);
+           glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * buffer.texture_size(), buffer.texture_data(), GL_STATIC_DRAW);
+           glVertexAttribPointer(vertexUVnewID, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+           glDrawArrays(GL_TRIANGLES, 0, buffer.size() / 3);
+
+           glDisableVertexAttribArray(vertexPos_modelspaceID);
+           glDisableVertexAttribArray(vertexClrID);
+           glDisableVertexAttribArray(vertexUVnewID);
+               // Swap buffers
+               glfwSwapBuffers(window);
+               glfwPollEvents();
+               ++iteration;
+        ///test fireball
+        
+        
+        
+        
+        
+        
+        
+        
         // SPHERE ---------------------------------------------------------------------------------
 
         glUseProgram(programIDGreen);

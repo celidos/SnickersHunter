@@ -9,7 +9,7 @@
 #include <math.h>
 
 
-GLfloat* getSphere(int vSteps, int hSteps, GLfloat R, int &bufSize, GLfloat *normals)
+GLfloat* getSphere(int vSteps, int hSteps, GLfloat R, int &bufSize)
 {
     int total_triangles = 2 * (vSteps - 2) * hSteps; // + 1 * 2 * circleSteps;
     int total_buffer_size = 3 * 3 * total_triangles;
@@ -17,7 +17,6 @@ GLfloat* getSphere(int vSteps, int hSteps, GLfloat R, int &bufSize, GLfloat *nor
     bufSize = total_buffer_size;
 
     GLfloat* buffer = new GLfloat[total_buffer_size];
-    normals = new GLfloat[3 * total_triangles];
 
     int b_ind = 0;
     for (int theta_frac = 1; theta_frac < vSteps - 1; ++theta_frac) {
