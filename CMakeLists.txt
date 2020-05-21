@@ -58,47 +58,7 @@ add_definitions(
 )
 
 
-# Tutorial 2
-add_executable(hunter 
-	hunter/main.cpp
-	hunter/engine.cpp
-    hunter/engine.hpp
-    hunter/controls.hpp
-    hunter/objects.hpp
-	common/shader.cpp
-	common/shader.hpp
-	common/controls.cpp
-	common/controls.hpp
-	common/texture.cpp
-	common/texture.hpp
-    common/objloader.cpp
-    common/objloader.hpp
-    common/quaternion_utils.cpp
-    common/quaternion_utils.hpp
-    common/tangentspace.cpp
-    common/tangentspace.hpp
-    common/text2D.cpp
-    common/text2D.hpp
-    common/vboindexer.cpp
-    common/vboindexer.hpp
-    
-	
-	hunter/TransformVertexShader.vertexshader
-	hunter/TextureFragmentShader.fragmentshader
-	
-	hunter/SimpleFragmentShader.fragmentshader
-	hunter/SimpleVertexShader.vertexshader
-    
-    hunter/ColorFragmentShader.fragmentshader
-    hunter/GreenFragmentShader.fragmentshader
-)
-target_link_libraries(hunter
-	${ALL_LIBS}
-)
-# Xcode and Visual working directories
-set_target_properties(hunter PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/hunter/")
-#create_target_launcher(hunter WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/hunter/")
-#create_default_target_launcher(hunter WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/hunter/") # tut 1 is not the default or people would complain that tut 2 doesn't work
+
 
 
 
@@ -218,10 +178,7 @@ SOURCE_GROUP(shaders REGULAR_EXPRESSION ".*/.*shader$" )
 
 
 if (NOT ${CMAKE_GENERATOR} MATCHES "Xcode" )
-add_custom_command(
-   TARGET hunter POST_BUILD
-   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/hunter${CMAKE_EXECUTABLE_SUFFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/hunter/"
-)
+
 add_custom_command(
    TARGET hw4 POST_BUILD
    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/hw4${CMAKE_EXECUTABLE_SUFFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/hw4/"

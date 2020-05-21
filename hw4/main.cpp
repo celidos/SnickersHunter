@@ -207,15 +207,15 @@ public:
 };
 
 
-#pragma once
+//#pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <GL/glew.h>
-#include <glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <math.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <GL/glew.h>
+//#include <glfw3.h>
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+#include <cmath>
 
 
 GLfloat* getSphere(int vSteps, int hSteps, GLfloat R, int &bufSize)
@@ -284,13 +284,10 @@ GLfloat* getSphere(int vSteps, int hSteps, GLfloat R, int &bufSize)
             b_ind += 2 * 3 * 3;
         }
     }
-
     return buffer;
 }
 
-
-
-int main( void )
+int main()
 {
     // Initialise GLFW
     if( !glfwInit() )
@@ -513,16 +510,16 @@ int main( void )
     };
     
     GLuint programIDGreen = LoadShaders( "FloorVertexShader.vertexshader", "GreenFragmentShader.fragmentshader" );
-    GLuint vertexPosition_modelspaceIDGreen = glGetAttribLocation(programIDGreen, "vertexPosition_modelspaceGreen");
     GLuint MatrixID2 = glGetUniformLocation(programIDGreen, "MVP");
     
     int sphere1_buf_size;
-    GLfloat * sphere1_buffer_data = getSphere(4, 4, 3, sphere1_buf_size);
+    GLfloat * sphere1_buffer_data = getSphere(10, 15, 3, sphere1_buf_size);
     GLuint vertexbuffer2;
     glGenBuffers(1, &vertexbuffer2);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer2);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * sphere1_buf_size, sphere1_buffer_data,  GL_STATIC_DRAW);
 
+    // ------------
 
     GLuint enemyVertexBuffer;
     glGenBuffers(1, &enemyVertexBuffer);
@@ -573,7 +570,6 @@ int main( void )
     float lastFireballTime = beginTime;
 
     do{
-
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -594,10 +590,10 @@ int main( void )
 
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP3[0][0]);
 
-        glEnableVertexAttribArray(vertexPosition_modelspaceIDGreen);
+        glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer2);
         glVertexAttribPointer(
-            vertexPosition_modelspaceIDGreen,  // The attribute we want to configure
+            0,  // The attribute we want to configure
             3,                            // size
             GL_FLOAT,                     // type
             GL_FALSE,                     // normalized?
@@ -611,9 +607,6 @@ int main( void )
         // FINISH ---------------------------------------------------------------------------------
         
         floor.draw(MVP);
-        
-        
-        
 
         // Enemies
         glUseProgram(EnemyID);
