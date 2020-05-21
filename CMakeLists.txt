@@ -134,6 +134,7 @@ add_executable(hw4
     
     	hw4/TextureFragmentShader.fragmentshader
     	hw4/TransformVertexShader.vertexshader
+        hw4/GreenFragmentShader.fragmentshader
 )	
 target_link_libraries(hw4
 	${ALL_LIBS}
