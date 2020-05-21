@@ -207,18 +207,18 @@ public:
 };
 
 
-#pragma once
+//#pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <GL/glew.h>
-#include <glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <math.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <GL/glew.h>
+//#include <glfw3.h>
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+#include <cmath>
 
 
-GLfloat* getSphere(int vSteps, int hSteps, GLfloat R, int &bufSize)
+GLfloat* getSphere(int vSteps, int hSteps, GLfloat R, int &bufSize, GLfloat * &normal)
 {
     int total_triangles = 2 * (vSteps - 2) * hSteps; // + 1 * 2 * circleSteps;
     int total_buffer_size = 3 * 3 * total_triangles;
@@ -226,6 +226,7 @@ GLfloat* getSphere(int vSteps, int hSteps, GLfloat R, int &bufSize)
     bufSize = total_buffer_size;
 
     GLfloat* buffer = new GLfloat[total_buffer_size];
+    normal = new GLfloat[total_buffer_size];
 
     int b_ind = 0;
     for (int theta_frac = 1; theta_frac < vSteps - 1; ++theta_frac) {
@@ -281,16 +282,45 @@ GLfloat* getSphere(int vSteps, int hSteps, GLfloat R, int &bufSize)
             buffer[b_ind+16] = point1[1];
             buffer[b_ind+17] = point1[2];
 
+            auto glpoint0 = glm::vec3(point0[0], point0[1], point0[2]);
+            auto glpoint1 = glm::vec3(point1[0], point1[1], point1[2]);
+            auto glpoint2 = glm::vec3(point2[0], point2[1], point2[2]);
+            auto glpoint3 = glm::vec3(point3[0], point3[1], point3[2]);
+
+            auto normal0 = -cross(glpoint1 - glpoint0, glpoint1 - glpoint2);
+            auto normal1 = cross(glpoint2 - glpoint1, glpoint2 - glpoint3);
+            normal[b_ind  ] = normal0[0];
+            normal[b_ind+1] = normal0[1];
+            normal[b_ind+2] = normal0[2];
+
+            normal[b_ind+3] = normal0[0];
+            normal[b_ind+4] = normal0[1];
+            normal[b_ind+5] = normal0[2];
+
+            normal[b_ind+6] = normal0[0];
+            normal[b_ind+7] = normal0[1];
+            normal[b_ind+8] = normal0[2];
+
+
+            normal[b_ind+9] = normal1[0];
+            normal[b_ind+10] = normal1[1];
+            normal[b_ind+11] = normal1[2];
+
+            normal[b_ind+12] = normal1[0];
+            normal[b_ind+13] = normal1[1];
+            normal[b_ind+14] = normal1[2];
+
+            normal[b_ind+15] = normal1[0];
+            normal[b_ind+16] = normal1[1];
+            normal[b_ind+17] = normal1[2];
+
             b_ind += 2 * 3 * 3;
         }
     }
-
     return buffer;
 }
 
-
-
-int main( void )
+int main()
 {
     // Initialise GLFW
     if( !glfwInit() )
@@ -512,17 +542,24 @@ int main( void )
         0.000001f, 1.000000f,
     };
     
-    GLuint programIDGreen = LoadShaders( "FloorVertexShader.vertexshader", "GreenFragmentShader.fragmentshader" );
-    GLuint vertexPosition_modelspaceIDGreen = glGetAttribLocation(programIDGreen, "vertexPosition_modelspaceGreen");
+    GLuint programIDGreen = LoadShaders( "SphereVertexShader.vertexshader", "GreenFragmentShader.fragmentshader" );
     GLuint MatrixID2 = glGetUniformLocation(programIDGreen, "MVP");
     
     int sphere1_buf_size;
-    GLfloat * sphere1_buffer_data = getSphere(4, 4, 3, sphere1_buf_size);
+    GLfloat * normal;
+    GLfloat * sphere1_buffer_data = getSphere(10, 15, 3, sphere1_buf_size, normal);
     GLuint vertexbuffer2;
     glGenBuffers(1, &vertexbuffer2);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer2);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * sphere1_buf_size, sphere1_buffer_data,  GL_STATIC_DRAW);
+    
+    GLuint normalbuffer;
+    glGenBuffers(1, &normalbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * sphere1_buf_size, normal,  GL_STATIC_DRAW);
 
+
+    // ------------
 
     GLuint enemyVertexBuffer;
     glGenBuffers(1, &enemyVertexBuffer);
@@ -573,7 +610,6 @@ int main( void )
     float lastFireballTime = beginTime;
 
     do{
-
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -594,10 +630,21 @@ int main( void )
 
         glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, &MVP3[0][0]);
 
-        glEnableVertexAttribArray(vertexPosition_modelspaceIDGreen);
+        glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer2);
         glVertexAttribPointer(
-            vertexPosition_modelspaceIDGreen,  // The attribute we want to configure
+            0,  // The attribute we want to configure
+            3,                            // size
+            GL_FLOAT,                     // type
+            GL_FALSE,                     // normalized?
+            0,                            // stride
+            (void*)0                      // array buffer offset
+        );
+        
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+        glVertexAttribPointer(
+            2,  // The attribute we want to configure
             3,                            // size
             GL_FLOAT,                     // type
             GL_FALSE,                     // normalized?
@@ -607,13 +654,12 @@ int main( void )
 
         // Draw the triangles !
         glDrawArrays(GL_TRIANGLES, 0, sphere1_buf_size); // 12*3 indices starting at 0 -> 12 triangles
+        
+        glDisableVertexAttribArray(2);
 
         // FINISH ---------------------------------------------------------------------------------
         
         floor.draw(MVP);
-        
-        
-        
 
         // Enemies
         glUseProgram(EnemyID);
@@ -699,7 +745,7 @@ int main( void )
             glUniformMatrix4fv(FireballModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
             glUniformMatrix4fv(FireballViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
-            glm::vec3 lightPos = glm::vec3(1,1,1);
+            glm::vec3 lightPos = glm::vec3(-4.0f, 3.0f, -5.0f);
             glUniform3f(FireballLightID, lightPos.x, lightPos.y, lightPos.z);
 
             glBindBuffer(GL_ARRAY_BUFFER, fireballVertexBuffer);
